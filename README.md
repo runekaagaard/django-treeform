@@ -10,4 +10,4 @@ My primary motivation for this library is to make a declarative way of getting d
 
 # How?
 
-Stub.
+The most basic building block of `treeform` is the compose function `comp`. It takes an iterable of HOF callables as the first parameter, then a string for the wanted modus of operation for the transformation - the default is `"default"`. It then takes an optional number of arguments and keyword arguments. 
