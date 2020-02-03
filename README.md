@@ -20,3 +20,9 @@ The most basic building block of `treeform` is the compose function `comp`. It t
             args, kwargs = fn(opts, *args, **kwargs)
 
         return Return(args, kwargs)
+
+The transformation from one tree of dicts, lists and scalar values to another are handled by tree basic functions:
+
+- copies(k): Copies the value `v` of `v = DATA[k]` from the source and inserts it under the same name `k` at the target.
+- applies(k, fns): For `v = DATA[k]` compose `v` with `fns` and write it to the target.
+- maps(k, fns): For each of the iterable `v = DATA[k]` compose `v` with `fns` and write it to the target.
