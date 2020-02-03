@@ -15,7 +15,7 @@ The most basic building block of `treeform` is the compose function `comp`. It t
 `comp` looks likes this:
 
     def comp(fns, *args, **kwargs):
-    """Composes an iterable of callables."""
+        """Composes an iterable of callables."""
         for fn, opts in fns:
             args, kwargs = fn(opts, *args, **kwargs)
 
