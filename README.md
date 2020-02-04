@@ -44,6 +44,7 @@ Applies a `comp` transformation on the source and saves the result to the target
         # COPY
         "title": movie.title,
         # APPLY
+        #            ↓ COPY                 ↓ COPY
         "director": {"name": director.name, "age": director.age},
     }
 
@@ -57,9 +58,12 @@ For each item at the source apply a `comp` transformation and saves the result t
         # COPY
         "title": movie.title,
         # APPLY
+        #            ↓ COPY                 ↓ COPY
         "director": {"name": director.name, "age": director.age},
         # MAP
         "actors": [
+            ↓ APPLY
+             ↓ COPY          ↓ COPY                   
             {"name": x.name, "education": x.education} for x in movie.actors.all()
         ]
     }
