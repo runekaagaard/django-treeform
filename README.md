@@ -27,7 +27,7 @@ Treeform uses `comp` to transform a tree into another tree which can be handled 
 
 ## Copy
 
-Copies a key/value pair from the source to the target. In normal django code that would look like:
+Read value for given key at the source and write it to the target. In normal django code that would look like:
 
     movie = get_movie()
     {
@@ -37,7 +37,7 @@ Copies a key/value pair from the source to the target. In normal django code tha
 
 ## Apply
 
-Applies a `comp` transformation on the source and saves the result to the target. In normal django code that would look like:
+Read value for given key at the source, apply a given `comp` transformation to the value and write the result to the target. In normal django code that would look like:
 
     director = get_director(movie)
     {
@@ -52,7 +52,7 @@ In database terms `apply` is similar to a one-to-one relation.
 
 ## Map
 
-For each item at the source apply a `comp` transformation and saves the result to the target. In normal django code that would look like:
+For each item at the source apply a given `comp` transformation and save the result to the target. In normal django code that would look like:
 
     {
         # COPY
@@ -67,4 +67,5 @@ For each item at the source apply a `comp` transformation and saves the result t
             {"name": x.name, "education": x.education} for x in movie.actors.all()
         ]
     }
+
 
