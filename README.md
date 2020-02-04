@@ -10,7 +10,9 @@ My primary motivation for this library is to make a declarative way of getting d
 
 # How?
 
-The most basic building block of `treeform` is the compose function `comp`. It takes an iterable of callables as the first argument. Then it takes an arbitrary number of arguments and keywords who are applied on the first callable. Subsequent callables receives the output of the previous callable as input. Finally the output of the last callable are returned.
+The most basic building block of `treeform` is the compose function `comp`. It's works like a recipy where each step adds a new thing to the dish.
+
+It takes an iterable of callables as the first argument. Then it takes an arbitrary number of arguments and keywords who are applied on the first callable. Subsequent callables receives the output of the previous callable as input. Finally the output of the last callable are returned.
 
 `comp` looks likes this:
 
@@ -21,8 +23,44 @@ The most basic building block of `treeform` is the compose function `comp`. It t
 
         return Return(args, kwargs)
 
-The transformation from one tree of dicts, lists and scalar values to another are handled by tree basic functions:
+Treeform uses `comp` to transform a tree into another tree which can be handled by tree basic operations:
 
-- `copies(k)`: Copies the value `v` of `v = DATA[k]` from the source and inserts it under the same name `k` at the target. Similar to `DATA["my_name"] = "My value"`
-- `applies(k, fns)`: For `v = DATA[k]` compose `v` with `fns` and write it to the target. Similar to a one-to-one relation.
-- `maps(k, fns)`: For each of the iterable `v = DATA[k]` compose `v` with `fns` and write it to the target. Similar to a one-many relation.
+## Copy
+
+Copies a key/value pair from the source to the target. In normal django code that would look like:
+
+    movie = get_movie()
+    {
+        # COPY
+        "title": movie.title
+    }
+
+## Apply
+
+Applies a `comp` transformation on the source and saves the result to the target. In normal django code that would look like:
+
+    director = get_director(movie)
+    {
+        # COPY
+        "title": movie.title,
+        # APPLY
+        "director": {"name": director.name, "age": director.age},
+    }
+
+In database terms `apply` is similar to a one-to-one relation.
+
+## Map
+
+For each item at the source apply a `comp` transformation and saves the result to the target. In normal django code that would look like:
+
+    {
+        # COPY
+        "title": movie.title,
+        # APPLY
+        "director": {"name": director.name, "age": director.age},
+        # MAP
+        "actors": [
+            {"name": x.name, "education": x.education} for x in movie.actors.all()
+        ]
+    }
+
