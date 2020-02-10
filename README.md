@@ -16,12 +16,14 @@ It takes an iterable of callables as the first argument. Then it takes an arbitr
 
 `comp` looks likes this:
 
-    def comp(fns, *args, **kwargs):
-        """Composes an iterable of callables."""
-        for fn in fns:
-            args, kwargs = fn(opts, *args, **kwargs)
+```
+def comp(fns, *args, **kwargs):
+    """Composes an iterable of callables."""
+    for fn in fns:
+        args, kwargs = fn(opts, *args, **kwargs)
 
-        return args, kwargs
+    return args, kwargs
+```
 
 Treeform uses `comp` to transform a tree into another tree which can be handled by three basic operations:
 
@@ -29,100 +31,117 @@ Treeform uses `comp` to transform a tree into another tree which can be handled 
 
 Read value for given key at the source and write it to the destination. In normal Django code that would look like:
 
-    movie = get_movie()
-    {
-        # COPY
-        "title": movie.title
-    }
+```
+movie = get_movie()
+{
+    # COPY
+    "title": movie.title
+}
+```
 
 The `copies` functions with some details glossed over, looks like:
 
-    def copies(k):
-        def copier(source, dest):
-            dest[k] = source[k]
+```
+def copies(k):
+    def copier(source, dest):
+        dest[k] = source[k]
 
-            return (source, dest), {}  # (args, kwargs)
+        return (source, dest), {}  # (args, kwargs)
 
-        return copier
+    return copier
+```
 
 The Django example above can be written as:
 
-    movie = get_movie()
-    #                       ↓ source ↓ dest
-    comp([copies("title")], movie,   {})
-
+```
+movie = get_movie()
+#                       ↓ source ↓ dest
+comp([copies("title")], movie,   {})
+```
 
 ## Apply
 
 Read value for given key at the source, apply a given `comp` transformation to the value and write the result to the destination. In normal django code that would look like:
 
-    director = get_director(movie)
-    {
-        # APPLY
-        #            ↓ COPY                 ↓ COPY
-        "director": {"name": director.name, "age": director.age},
-    }
+```
+director = get_director(movie)
+{
+    # APPLY
+    #            ↓ COPY                 ↓ COPY
+    "director": {"name": director.name, "age": director.age},
+}
+```
 
 In database terms `apply` is similar to a one-to-one relation.
 
 The `applies` functions with some details glossed over, looks like:
 
-    def applies(k, fns):
-        def applier(source, dest):
-            # 0 gets the args, 1 the dest.
-            dest[k] = comp(fns, source[k], {})[0][1]
+```
+def applies(k, fns):
+    def applier(source, dest):
+        # 0 gets the args, 1 the dest.
+        dest[k] = comp(fns, source[k], {})[0][1]
 
-            return (source, dest), {}  # (args, kwargs)
+        return (source, dest), {}  # (args, kwargs)
 
-        return applier
+    return applier
+```
 
 The Django example above can be written as:
 
-    director = get_director(movie)
-    #                                                            ↓ source   ↓ dest
-    comp([applies("director", [copies("name"), copies("age")])], director,  {})
+```
+director = get_director(movie)
+#                                                            ↓ source   ↓ dest
+comp([applies("director", [copies("name"), copies("age")])], director,  {})
+```
 
 ## Map
 
 For each item at the source apply a given `comp` transformation and save the result to the destination. In normal django code that would look like:
 
-    {
-        # MAP
-        "actors": [
-            ↓ APPLY
-             ↓ COPY          ↓ COPY                   
-            {"name": x.name, "education": x.education} for x in movie.actors.all()
-        ]
-    }
+```
+{
+    # MAP
+    "actors": [
+        ↓ APPLY
+         ↓ COPY          ↓ COPY                   
+        {"name": x.name, "education": x.education} for x in movie.actors.all()
+    ]
+}
+```
 
 In database terms `map` is similar to a one-to-many or many-to-many relation.
 
 The `maps` functions with some details glossed over, looks like:
 
-    def maps(k, fns):
-        def mapper(source, dest):
-            # 0 gets the args, 1 the dest.
-            dest[k] = [comp(fns, x, {})[0][1] for x in source[k]]
+```
+def maps(k, fns):
+    def mapper(source, dest):
+        # 0 gets the args, 1 the dest.
+        dest[k] = [comp(fns, x, {})[0][1] for x in source[k]]
 
-            return (source, dest), {}  # (args, kwargs)
+        return (source, dest), {}  # (args, kwargs)
 
-        return mapper
+    return mapper
+```
 
 The Django example above can be written as:
 
-    comp(
-        [maps("actors", [copies("name"), copies("education")])],
-        # source
-        {"actors": [
-            {
-                "name": "Keanu Reeves",
-                "education": "The best"
-            },
-            {
-                "name": "Carrie Something",
-                "education": "Superwell"
-            }
-        ]},
-        # dest
-        {},
-    )
+```
+comp(
+    [maps("actors", [copies("name"), copies("education")])],
+    # source
+    {"actors": [
+        {
+            "name": "Keanu Reeves",
+            "education": "The best"
+        },
+        {
+            "name": "Carrie Something",
+            "education": "Superwell"
+        }
+    ]},
+    # dest
+    {},
+)
+```
