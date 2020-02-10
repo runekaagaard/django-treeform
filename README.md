@@ -131,7 +131,7 @@ The Django example above can be written as:
 comp(
     [maps("actors", [copies("name"), copies("education")])],
     # source
-    movie.actors.all(),
+    movie,
     # dest
     {},
 )
