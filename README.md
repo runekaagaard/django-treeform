@@ -16,7 +16,7 @@ It takes an iterable of callables as the first argument. Then it takes an arbitr
 
 `comp` looks likes this:
 
-```
+```python
 def comp(fns, *args, **kwargs):
     """Composes an iterable of callables."""
     for fn in fns:
@@ -31,7 +31,7 @@ Treeform uses `comp` to transform a tree into another tree which can be handled 
 
 Read value for given key at the source and write it to the destination. In normal Django code that would look like:
 
-```
+```python
 movie = get_movie()
 {
     # COPY
@@ -41,7 +41,7 @@ movie = get_movie()
 
 The `copies` functions with some details glossed over, looks like:
 
-```
+```python
 def copies(k):
     def copier(source, dest):
         dest[k] = source[k]
@@ -53,7 +53,7 @@ def copies(k):
 
 The Django example above can be written as:
 
-```
+```python
 movie = get_movie()
 #                       ↓ source ↓ dest
 comp([copies("title")], movie,   {})
@@ -63,7 +63,7 @@ comp([copies("title")], movie,   {})
 
 Read value for given key at the source, apply a given `comp` transformation to the value and write the result to the destination. In normal django code that would look like:
 
-```
+```python
 director = get_director(movie)
 {
     # APPLY
@@ -76,7 +76,7 @@ In database terms `apply` is similar to a one-to-one relation.
 
 The `applies` functions with some details glossed over, looks like:
 
-```
+```python
 def applies(k, fns):
     def applier(source, dest):
         # 0 gets the args, 1 the dest.
@@ -89,7 +89,7 @@ def applies(k, fns):
 
 The Django example above can be written as:
 
-```
+```python
 director = get_director(movie)
 #                                                            ↓ source   ↓ dest
 comp([applies("director", [copies("name"), copies("age")])], director,  {})
@@ -99,7 +99,7 @@ comp([applies("director", [copies("name"), copies("age")])], director,  {})
 
 For each item at the source apply a given `comp` transformation and save the result to the destination. In normal django code that would look like:
 
-```
+```python
 {
     # MAP
     "actors": [
@@ -114,7 +114,7 @@ In database terms `map` is similar to a one-to-many or many-to-many relation.
 
 The `maps` functions with some details glossed over, looks like:
 
-```
+```python
 def maps(k, fns):
     def mapper(source, dest):
         # 0 gets the args, 1 the dest.
@@ -127,7 +127,7 @@ def maps(k, fns):
 
 The Django example above can be written as:
 
-```
+```python
 comp(
     [maps("actors", [copies("name"), copies("education")])],
     # source
