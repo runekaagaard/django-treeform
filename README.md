@@ -25,7 +25,7 @@ def comp(fns, *args, **kwargs):
     return args, kwargs
 ```
 
-Treeform uses `comp` to transform a tree into another tree which can be handled by three basic operations:
+Treeform uses `comp` to transform a tree into another tree which can be handled by three basic operations `copy`, `apply` and `map`:
 
 ## Copy
 
