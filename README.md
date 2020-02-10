@@ -131,16 +131,7 @@ The Django example above can be written as:
 comp(
     [maps("actors", [copies("name"), copies("education")])],
     # source
-    {"actors": [
-        {
-            "name": "Keanu Reeves",
-            "education": "The best"
-        },
-        {
-            "name": "Carrie Something",
-            "education": "Superwell"
-        }
-    ]},
+    movie.actors.all(),
     # dest
     {},
 )
