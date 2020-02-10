@@ -27,7 +27,7 @@ Treeform uses `comp` to transform a tree into another tree which can be handled 
 
 ## Copy
 
-Read value for given key at the source and write it to the target. In normal Django code that would look like:
+Read value for given key at the source and write it to the destination. In normal Django code that would look like:
 
     movie = get_movie()
     {
@@ -38,22 +38,23 @@ Read value for given key at the source and write it to the target. In normal Dja
 The `copies` functions with some details glossed over, looks like:
 
     def copies(k):
-        def copier(source, target):
-            target[k] = source[k]
+        def copier(source, dest):
+            dest[k] = source[k]
 
-            return (source, target), {}  # (args, kwargs)
+            return (source, dest), {}  # (args, kwargs)
 
         return copier
 
 The Django example above can be written as:
 
     movie = get_movie()
-    comp([copies("title")], movie, {})
+    #                       ↓ source ↓ dest
+    comp([copies("title")], movie,   {})
 
 
 ## Apply
 
-Read value for given key at the source, apply a given `comp` transformation to the value and write the result to the target. In normal django code that would look like:
+Read value for given key at the source, apply a given `comp` transformation to the value and write the result to the destination. In normal django code that would look like:
 
     director = get_director(movie)
     {
@@ -67,22 +68,23 @@ In database terms `apply` is similar to a one-to-one relation.
 The `applies` functions with some details glossed over, looks like:
 
     def applies(k, fns):
-        def applier(source, target):
-            # 0 gets the args, 1 the target.
-            target[k] = comp(fns, source[k], {})[0][1]
+        def applier(source, dest):
+            # 0 gets the args, 1 the dest.
+            dest[k] = comp(fns, source[k], {})[0][1]
 
-            return (source, target), {}  # (args, kwargs)
+            return (source, dest), {}  # (args, kwargs)
 
         return applier
 
 The Django example above can be written as:
 
     director = get_director(movie)
-    comp([applies("director", [copies("name"), copies("age")])], source, target)
+    #                                                            ↓ source   ↓ dest
+    comp([applies("director", [copies("name"), copies("age")])], director,  {})
 
 ## Map
 
-For each item at the source apply a given `comp` transformation and save the result to the target. In normal django code that would look like:
+For each item at the source apply a given `comp` transformation and save the result to the destination. In normal django code that would look like:
 
     {
         # MAP
@@ -98,11 +100,11 @@ In database terms `map` is similar to a one-to-many or many-to-many relation.
 The `maps` functions with some details glossed over, looks like:
 
     def maps(k, fns):
-        def mapper(source, target):
-            # 0 gets the args, 1 the target.
-            target[k] = [comp(fns, x, {})[0][1] for x in source[k]]
+        def mapper(source, dest):
+            # 0 gets the args, 1 the dest.
+            dest[k] = [comp(fns, x, {})[0][1] for x in source[k]]
 
-            return (source, target), {}  # (args, kwargs)
+            return (source, dest), {}  # (args, kwargs)
 
         return mapper
 
@@ -110,6 +112,7 @@ The Django example above can be written as:
 
     comp(
         [maps("actors", [copies("name"), copies("education")])],
+        # source
         {"actors": [
             {
                 "name": "Keanu Reeves",
@@ -120,5 +123,6 @@ The Django example above can be written as:
                 "education": "Superwell"
             }
         ]},
+        # dest
         {},
     )
