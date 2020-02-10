@@ -18,16 +18,16 @@ It takes an iterable of callables as the first argument. Then it takes an arbitr
 
     def comp(fns, *args, **kwargs):
         """Composes an iterable of callables."""
-        for fn, opts in fns:
+        for fn in fns:
             args, kwargs = fn(opts, *args, **kwargs)
 
-        return Return(args, kwargs)
+        return args, kwargs
 
-Treeform uses `comp` to transform a tree into another tree which can be handled by tree basic operations:
+Treeform uses `comp` to transform a tree into another tree which can be handled by three basic operations:
 
 ## Copy
 
-Read value for given key at the source and write it to the target. In normal django code that would look like:
+Read value for given key at the source and write it to the target. In normal Django code that would look like:
 
     movie = get_movie()
     {
@@ -35,14 +35,28 @@ Read value for given key at the source and write it to the target. In normal dja
         "title": movie.title
     }
 
+The `copies` functions with some details glossed over, looks like:
+
+    def copies(k):
+        def copier(source, target):
+            target[k] = source[k]
+
+            return (source, target), {}  # (args, kwargs)
+
+        return copier
+
+The Django example above can be written as:
+
+    movie = get_movie()
+    comp([copies("title")], movie, {})
+
+
 ## Apply
 
 Read value for given key at the source, apply a given `comp` transformation to the value and write the result to the target. In normal django code that would look like:
 
     director = get_director(movie)
     {
-        # COPY
-        "title": movie.title,
         # APPLY
         #            ↓ COPY                 ↓ COPY
         "director": {"name": director.name, "age": director.age},
@@ -50,16 +64,27 @@ Read value for given key at the source, apply a given `comp` transformation to t
 
 In database terms `apply` is similar to a one-to-one relation.
 
+The `applies` functions with some details glossed over, looks like:
+
+    def applies(k, fns):
+        def applier(source, target):
+            # 0 gets the args, 1 the target.
+            target[k] = comp(fns, source[k], {})[0][1]
+
+            return (source, target), {}  # (args, kwargs)
+
+        return applier
+
+The Django example above can be written as:
+
+    director = get_director(movie)
+    comp([applies("director", [copies("name"), copies("age")])], source, target)
+
 ## Map
 
 For each item at the source apply a given `comp` transformation and save the result to the target. In normal django code that would look like:
 
     {
-        # COPY
-        "title": movie.title,
-        # APPLY
-        #            ↓ COPY                 ↓ COPY
-        "director": {"name": director.name, "age": director.age},
         # MAP
         "actors": [
             ↓ APPLY
@@ -68,4 +93,32 @@ For each item at the source apply a given `comp` transformation and save the res
         ]
     }
 
+In database terms `map` is similar to a one-to-many or many-to-many relation.
 
+The `maps` functions with some details glossed over, looks like:
+
+    def maps(k, fns):
+        def mapper(source, target):
+            # 0 gets the args, 1 the target.
+            target[k] = [comp(fns, x, {})[0][1] for x in source[k]]
+
+            return (source, target), {}  # (args, kwargs)
+
+        return mapper
+
+The Django example above can be written as:
+
+    comp(
+        [maps("actors", [copies("name"), copies("education")])],
+        {"actors": [
+            {
+                "name": "Keanu Reeves",
+                "education": "The best"
+            },
+            {
+                "name": "Carrie Something",
+                "education": "Superwell"
+            }
+        ]},
+        {},
+    )
