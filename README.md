@@ -27,7 +27,7 @@ def comp(fns, *args, **kwargs):
 
 Treeform uses `comp` to transform a tree into another tree which can be handled by three basic operations `copy`, `apply` and `map`:
 
-> The following examples glosses over the difference between looking an item up in a dict and looking it up in class a instance.
+> The following examples glosses over the difference between looking an item up in a dict and looking it up in a class instance.
 
 ## Copy
 
