@@ -89,4 +89,4 @@ if __name__ == "__main__":
     ], source, dest)
     source, dest = args
     import json
-    print json.dumps(dest, indent=4)
+    print(json.dumps(dest, indent=4))
