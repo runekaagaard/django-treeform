@@ -14,3 +14,4 @@ class Actor(m.Model):
 class Movie(m.Model):
     title = m.TextField()
     actors = m.ManyToManyField(Actor)
+    director = m.ForeignKey(Director, on_delete=m.PROTECT)
