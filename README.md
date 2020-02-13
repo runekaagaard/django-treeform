@@ -20,7 +20,7 @@ It takes an iterable of callables as the first argument. Then it takes an arbitr
 def comp(fns, *args, **kwargs):
     """Composes an iterable of callables."""
     for fn in fns:
-        args, kwargs = fn(opts, *args, **kwargs)
+        args, kwargs = fn(*args, **kwargs)
 
     return args, kwargs
 ```
