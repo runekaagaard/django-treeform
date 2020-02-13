@@ -25,9 +25,9 @@ def sets(thing, key, value):
     return thing
 
 
-def copies(k, getter=gets, setter=sets):
+def copies(k):
     def copier(source, dest):
-        setter(dest, k, getter(source, k))
+        sets(dest, k, gets(source, k))
 
         return (source, dest), {}  # (args, kwargs)
 
