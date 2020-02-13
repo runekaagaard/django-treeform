@@ -10,6 +10,7 @@ def comp(fns, *args, **kwargs):
 
 
 def gets(thing, key):
+    """Get value in both dict and object things."""
     if isinstance(thing, Mapping):
         return thing[key]
     else:
@@ -17,6 +18,7 @@ def gets(thing, key):
 
 
 def sets(thing, key, value):
+    """Sets value in both dict and object things."""
     if isinstance(thing, Mapping):
         thing[key] = value
     else:
@@ -37,7 +39,7 @@ def copies(k):
 def applies(k, fns):
     def applier(source, dest):
         # 0 gets the args, 1 the dest.
-        dest[k] = comp(fns, source[k], {})[0][1]
+        sets(dest, k, comp(fns, gets(source, k), {})[0][1])
 
         return (source, dest), {}  # (args, kwargs)
 
@@ -47,7 +49,7 @@ def applies(k, fns):
 def maps(k, fns):
     def mapper(source, dest):
         # 0 gets the args, 1 the dest.
-        dest[k] = [comp(fns, x, {})[0][1] for x in source[k]]
+        sets(dest, k, [comp(fns, x, {})[0][1] for x in gets(source, k)])
 
         return (source, dest), {}  # (args, kwargs)
 
