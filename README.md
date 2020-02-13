@@ -27,6 +27,10 @@ def comp(fns, *args, **kwargs):
 
 Treeform uses `comp` to transform a tree into another tree which can be handled by three basic operations `copy`, `apply` and `map`:
 
+<aside>
+    The following examples glosses over the difference between looking an item up in a dict and looking it up in class instance.
+</aside>
+
 ## Copy
 
 Read value for given key at the source and write it to the destination. In normal Django code that would look like:
