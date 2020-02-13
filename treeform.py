@@ -18,7 +18,7 @@ def gets(thing, key):
 
 
 def sets(thing, key, value):
-    """Sets value in both dict and object things."""
+    """Set value in both dict and object things."""
     if isinstance(thing, Mapping):
         thing[key] = value
     else:
@@ -28,6 +28,8 @@ def sets(thing, key, value):
 
 
 def copies(k):
+    """Transfers a key/value pair from the source to the target."""
+
     def copier(source, dest):
         sets(dest, k, gets(source, k))
 
@@ -37,6 +39,8 @@ def copies(k):
 
 
 def applies(k, fns):
+    """Composes fns over the value of k and copies it to the target."""
+
     def applier(source, dest):
         # 0 gets the args, 1 the dest.
         sets(dest, k, comp(fns, gets(source, k), {})[0][1])
@@ -47,6 +51,8 @@ def applies(k, fns):
 
 
 def maps(k, fns):
+    """Composes fns for each of the value of k and copies it to the target."""
+
     def mapper(source, dest):
         # 0 gets the args, 1 the dest.
         sets(dest, k, [comp(fns, x, {})[0][1] for x in gets(source, k)])
