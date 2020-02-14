@@ -69,7 +69,7 @@ def maps(k, fns):
 
 
 def dgets(thing, key):
-    """Get value in both dict and object things."""
+    """Django version of gets."""
     if isinstance(thing, Mapping):
         return thing[key]
     else:
@@ -81,7 +81,7 @@ def dgets(thing, key):
 
 
 def dsets(thing, key, value):
-    """Set value in both dict and object things."""
+    """Django version of sets."""
     if isinstance(thing, Mapping):
         thing[key] = value
     else:
@@ -91,7 +91,7 @@ def dsets(thing, key, value):
 
 
 def field(k):
-    """Transfers a key/value pair from the source to the target."""
+    """Django model field."""
 
     def copier(source, dest):
         dsets(dest, k, dgets(source, k))
@@ -102,7 +102,7 @@ def field(k):
 
 
 def one(k, fns):
-    """Composes fns over the value of k and copies it to the target."""
+    """Django one-2-one relation."""
 
     def applier(source, dest):
         # 0 gets the args, 1 the dest.
@@ -114,7 +114,7 @@ def one(k, fns):
 
 
 def many(k, fns):
-    """Composes fns for each of the value of k and copies it to the target."""
+    """Django one-2-many or many-2-many mapping."""
 
     def mapper(source, dest):
         # 0 gets the args, 1 the dest.
