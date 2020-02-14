@@ -9,6 +9,9 @@ def comp(fns, *args, **kwargs):
     return args, kwargs
 
 
+### General ###
+
+
 def gets(thing, key):
     """Get value in both dict and object things."""
     if isinstance(thing, Mapping):
@@ -56,6 +59,66 @@ def maps(k, fns):
     def mapper(source, dest):
         # 0 gets the args, 1 the dest.
         sets(dest, k, [comp(fns, x, {})[0][1] for x in gets(source, k)])
+
+        return (source, dest), {}  # (args, kwargs)
+
+    return mapper
+
+
+### Django ###
+
+
+def dgets(thing, key):
+    """Get value in both dict and object things."""
+    if isinstance(thing, Mapping):
+        return thing[key]
+    else:
+        val = getattr(thing, key)
+        if "RelatedManager" in repr(val.__class__):
+            return val.all()
+        else:
+            return val
+
+
+def dsets(thing, key, value):
+    """Set value in both dict and object things."""
+    if isinstance(thing, Mapping):
+        thing[key] = value
+    else:
+        setattr(thing, key, value)
+
+    return thing
+
+
+def field(k):
+    """Transfers a key/value pair from the source to the target."""
+
+    def copier(source, dest):
+        dsets(dest, k, dgets(source, k))
+
+        return (source, dest), {}  # (args, kwargs)
+
+    return copier
+
+
+def one(k, fns):
+    """Composes fns over the value of k and copies it to the target."""
+
+    def applier(source, dest):
+        # 0 gets the args, 1 the dest.
+        dsets(dest, k, comp(fns, dgets(source, k), {})[0][1])
+
+        return (source, dest), {}  # (args, kwargs)
+
+    return applier
+
+
+def many(k, fns):
+    """Composes fns for each of the value of k and copies it to the target."""
+
+    def mapper(source, dest):
+        # 0 gets the args, 1 the dest.
+        dsets(dest, k, [comp(fns, x, {})[0][1] for x in dgets(source, k)])
 
         return (source, dest), {}  # (args, kwargs)
 
