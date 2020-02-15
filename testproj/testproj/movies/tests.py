@@ -2,7 +2,7 @@ import pytest
 from testproj.movies.models import Movie
 
 from django.core.management import call_command
-from treeform import comp, field, one, many
+from treeform import dcomp, field, one, many, READ, WRITE, META
 
 
 @pytest.fixture(scope='session')
@@ -16,7 +16,8 @@ def test_basic():
     assert Movie.objects.count() == 1
     source = Movie.objects.get(pk=1)
     dest = {}
-    args, kwargs = comp(
+    args, kwargs = dcomp(
+        READ,
         [
             field("title"),
             one("director", [

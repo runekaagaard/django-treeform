@@ -67,6 +67,19 @@ def maps(k, fns):
 
 ### Django ###
 
+# Mode
+READ = "read"
+WRITE = "write"
+META = "meta"
+
+
+def dcomp(mode, fns, *args, **kwargs):
+    """Django version of comp."""
+    for fn in fns:
+        args, kwargs = getattr(fn, mode)(*args, **kwargs)
+
+    return args, kwargs
+
 
 def dgets(thing, key):
     """Django version of gets."""
@@ -90,39 +103,47 @@ def dsets(thing, key, value):
     return thing
 
 
-def field(k):
+class field(object):
     """Django model field."""
 
-    def copier(source, dest):
-        dsets(dest, k, dgets(source, k))
+    def __init__(self, k):
+        self.k = k
 
-        return (source, dest), {}  # (args, kwargs)
+    def read(self, source, dest):
+        dsets(dest, self.k, dgets(source, self.k))
 
-    return copier
+        return (source, dest), {}
 
 
-def one(k, fns):
+class one(object):
     """Django one-2-one relation."""
 
-    def applier(source, dest):
+    def __init__(self, k, fns):
+        self.k = k
+        self.fns = fns
+
+    def read(self, source, dest):
         # 0 gets the args, 1 the dest.
-        dsets(dest, k, comp(fns, dgets(source, k), {})[0][1])
+        dsets(dest, self.k,
+              dcomp(READ, self.fns, dgets(source, self.k), {})[0][1])
 
         return (source, dest), {}  # (args, kwargs)
 
-    return applier
 
-
-def many(k, fns):
+class many(object):
     """Django one-2-many or many-2-many mapping."""
 
-    def mapper(source, dest):
+    def __init__(self, k, fns):
+        self.k = k
+        self.fns = fns
+
+    def read(self, source, dest):
         # 0 gets the args, 1 the dest.
-        dsets(dest, k, [comp(fns, x, {})[0][1] for x in dgets(source, k)])
+        dsets(dest, self.k, [
+            dcomp(READ, self.fns, x, {})[0][1] for x in dgets(source, self.k)
+        ])
 
         return (source, dest), {}  # (args, kwargs)
-
-    return mapper
 
 
 if __name__ == "__main__":
