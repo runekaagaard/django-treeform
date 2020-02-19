@@ -184,7 +184,7 @@ class many(object):
 ### Other ###
 
 CUSTOM_DATA_TYPE = "__CDT__"
-DATA_TYPE_CLASS = 1
+DATA_TYPE_CLASS = "treeform.1"
 
 
 def pp(data):
