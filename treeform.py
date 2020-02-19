@@ -1,4 +1,7 @@
+import json
 from collections import Mapping
+
+from django.db.models.fields import NOT_PROVIDED
 
 
 def comp(fns, *args, **kwargs):
@@ -103,6 +106,20 @@ def dsets(thing, key, value):
     return thing
 
 
+def read(source, schema):
+    return dcomp(READ, schema, source, {})[0][1]
+
+
+def meta(source, schema):
+    return dcomp(META, schema, source, {})[0][1]
+
+
+NULL = "__NULL__"
+META_ATTRS = (("blank", NULL), ("hidden", NULL), ("help_text", NULL),
+              ("max_length", None), ("null", NULL), ("verbose_name", None),
+              ("default", NOT_PROVIDED))
+
+
 class field(object):
     """Django model field."""
 
@@ -111,6 +128,17 @@ class field(object):
 
     def read(self, source, dest):
         dsets(dest, self.k, dgets(source, self.k))
+
+        return (source, dest), {}
+
+    def meta(self, source, dest):
+        field = source._meta.get_field(self.k)
+        metadata = {"type": type(field)}
+        for key, null in META_ATTRS:
+            val = getattr(field, key, NULL)
+            if val != null:
+                metadata[key] = val
+        dsets(dest, self.k, metadata)
 
         return (source, dest), {}
 
@@ -123,11 +151,14 @@ class one(object):
         self.fns = fns
 
     def read(self, source, dest):
-        # 0 gets the args, 1 the dest.
-        dsets(dest, self.k,
-              dcomp(READ, self.fns, dgets(source, self.k), {})[0][1])
+        dsets(dest, self.k, read(dgets(source, self.k), self.fns))
 
-        return (source, dest), {}  # (args, kwargs)
+        return (source, dest), {}
+
+    def meta(self, source, dest):
+        dsets(dest, self.k, meta(dgets(source, self.k), self.fns))
+
+        return (source, dest), {}
 
 
 class many(object):
@@ -138,12 +169,36 @@ class many(object):
         self.fns = fns
 
     def read(self, source, dest):
-        # 0 gets the args, 1 the dest.
         dsets(dest, self.k, [
             dcomp(READ, self.fns, x, {})[0][1] for x in dgets(source, self.k)
         ])
 
-        return (source, dest), {}  # (args, kwargs)
+        return (source, dest), {}
+
+    def meta(self, source, dest):
+        dsets(dest, self.k, meta(dgets(source, self.k).model, self.fns))
+
+        return (source, dest), {}
+
+
+### Other ###
+
+CUSTOM_DATA_TYPE = "__CDT__"
+DATA_TYPE_CLASS = 1
+
+
+def pp(data):
+    print(serialize(data, indent=4))
+
+
+def default(thing):
+    if type(thing) is type:
+        return (CUSTOM_DATA_TYPE, DATA_TYPE_CLASS,
+                str(thing.__module__) + "." + thing.__class__.__name__)
+
+
+def serialize(data, indent=None):
+    return json.dumps(data, default=default, indent=indent)
 
 
 if __name__ == "__main__":

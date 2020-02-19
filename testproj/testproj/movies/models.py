@@ -7,11 +7,11 @@ class Director(m.Model):
 
 
 class Actor(m.Model):
-    name = m.TextField()
+    name = m.TextField(help_text="Actor Name")
     education = m.TextField()
 
 
 class Movie(m.Model):
-    title = m.TextField()
+    title = m.TextField("Movie Title")
     actors = m.ManyToManyField(Actor)
     director = m.ForeignKey(Director, on_delete=m.PROTECT)
