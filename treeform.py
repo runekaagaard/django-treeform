@@ -2,6 +2,7 @@ import json
 from collections import Mapping
 
 from django.db.models.fields import NOT_PROVIDED
+from django.db.models import Model
 
 
 def comp(fns, *args, **kwargs):
@@ -132,13 +133,16 @@ class field(object):
         return (source, dest), {}
 
     def meta(self, source, dest):
-        field = source._meta.get_field(self.k)
-        metadata = {"type": type(field)}
-        for key, null in META_ATTRS:
-            val = getattr(field, key, NULL)
-            if val != null:
-                metadata[key] = val
-        dsets(dest, self.k, metadata)
+        if "model" not in dest:
+            dest["model"] = source
+            dest["fields"] = []
+        dest["fields"].append(self.k)
+        # metadata = {"type": type(field)}
+        # for key, null in META_ATTRS:
+        #     val = getattr(field, key, NULL)
+        #     if val != null:
+        #         metadata[key] = val
+        # dsets(dest, self.k, metadata)
 
         return (source, dest), {}
 
@@ -156,7 +160,8 @@ class one(object):
         return (source, dest), {}
 
     def meta(self, source, dest):
-        dsets(dest, self.k, meta(dgets(source, self.k), self.fns))
+        dsets(dest, self.k,
+              meta(dgets(source, self.k).field.related_model, self.fns))
 
         return (source, dest), {}
 
@@ -176,7 +181,7 @@ class many(object):
         return (source, dest), {}
 
     def meta(self, source, dest):
-        dsets(dest, self.k, meta(dgets(source, self.k).model, self.fns))
+        dsets(dest, self.k, meta(dgets(source, self.k).rel.model, self.fns))
 
         return (source, dest), {}
 
@@ -188,13 +193,20 @@ DATA_TYPE_CLASS = "treeform.1"
 
 
 def pp(data):
-    print(serialize(data, indent=4))
+    from pprint import pprint
+    pprint(data, indent=4, depth=10)
+    # print(serialize(data, indent=4))
 
 
 def default(thing):
+    print(thing, isinstance(thing, Model), type(thing) is type)
     if type(thing) is type:
         return (CUSTOM_DATA_TYPE, DATA_TYPE_CLASS,
-                str(thing.__module__) + "." + thing.__class__.__name__)
+                str(thing.__module__) + "." + thing.__class__.__name_)
+    elif isinstance(thing, Model):
+        return str(thing)
+    else:
+        raise TypeError("DONT KNOW" + repr(thing))
 
 
 def serialize(data, indent=None):
@@ -227,5 +239,4 @@ if __name__ == "__main__":
         maps("actors", [copies("name"), copies("education")])
     ], source, dest)
     source, dest = args
-    import json
     print(json.dumps(dest, indent=4))
