@@ -3,6 +3,8 @@ from collections import Mapping
 
 from django.db.models.fields import NOT_PROVIDED
 from django.db.models import Model
+from django.db.models.fields.related_descriptors import (
+    ReverseManyToOneDescriptor, ManyToManyDescriptor)
 
 
 def comp(fns, *args, **kwargs):
@@ -181,7 +183,13 @@ class many(object):
         return (source, dest), {}
 
     def meta(self, source, dest):
-        dsets(dest, self.k, meta(dgets(source, self.k).rel.model, self.fns))
+        field = dgets(source, self.k)
+        if isinstance(field, ReverseManyToOneDescriptor):
+            dsets(dest, self.k, meta(field.rel.related_model, self.fns))
+        elif isinstance(field, ManyToManyDescriptor):
+            dsets(dest, self.k, meta(field.rel.model, self.fns))
+        else:
+            raise Exception("Unknown field.")
 
         return (source, dest), {}
 
