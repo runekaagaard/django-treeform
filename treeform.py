@@ -184,12 +184,12 @@ class many(object):
 
     def meta(self, source, dest):
         field = dgets(source, self.k)
-        if isinstance(field, ReverseManyToOneDescriptor):
+        if type(field) is ReverseManyToOneDescriptor:
             dsets(dest, self.k, meta(field.rel.related_model, self.fns))
-        elif isinstance(field, ManyToManyDescriptor):
+        elif type(field) is ManyToManyDescriptor:
             dsets(dest, self.k, meta(field.rel.model, self.fns))
         else:
-            raise Exception("Unknown field.")
+            raise Exception("Unknown many field type.")
 
         return (source, dest), {}
 

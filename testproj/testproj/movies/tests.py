@@ -47,7 +47,6 @@ def test_read():
 @pytest.mark.django_db
 def test_meta():
     meta_data = meta(Movie, VIEW_MOVIE_SCHEMA)
-    print(meta_data)
     assert meta_data == {
         'actors': {
             'fields': ['name', 'education'],
@@ -64,4 +63,3 @@ def test_meta():
         'fields': ['title'],
         'model': Movie
     }
-    assert 0
