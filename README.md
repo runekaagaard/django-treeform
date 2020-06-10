@@ -9,6 +9,10 @@ My primary motivation for this library is to make a declarative way of getting d
 - separating the structure of the data from the actual data.
 - generating database triggers that maintains a version id of the transformation as a whole.
 
+# Example?
+
+Se example code at https://github.com/runekaagaard/django-treeform/blob/master/testproj/testproj/movies/tests.py.
+
 # How?
 
 The most basic building block of `treeform` is the compose function `comp`. It's works like a recipy where each step adds a new thing to the dish.
