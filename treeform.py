@@ -137,14 +137,17 @@ class field(object):
     def meta(self, source, dest):
         if "model" not in dest:
             dest["model"] = source
-            dest["fields"] = []
-        dest["fields"].append(self.k)
-        # metadata = {"type": type(field)}
-        # for key, null in META_ATTRS:
-        #     val = getattr(field, key, NULL)
-        #     if val != null:
-        #         metadata[key] = val
-        # dsets(dest, self.k, metadata)
+            dest["ordering"] = []
+            dest["fields"] = {}
+
+        model_field = source._meta.get_field(self.k)
+        dest["ordering"].append(self.k)
+        dest["type"] = type(model_field)
+
+        for key, null in META_ATTRS:
+            val = getattr(model_field, key, NULL)
+            if val != NULL:
+                dest["fields"][key] = val
 
         return (source, dest), {}
 
