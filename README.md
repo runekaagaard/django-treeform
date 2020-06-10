@@ -7,7 +7,7 @@ My primary motivation for this library is to make a declarative way of getting d
 - solving the N+1 problem by knowing what to select based on child nodes.
 - serialization.
 - separating the structure of the data from the actual data.
-- generating database triggers that maintains a version id of the transformation as a whole.
+- generating database triggers that maintains a version id of both the transformation as a whole and chosen sub parts.
 
 # Example?
 
