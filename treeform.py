@@ -1,4 +1,4 @@
-import json
+import json, hashlib
 from collections import Mapping
 
 from django.db.models.fields import NOT_PROVIDED
@@ -78,6 +78,7 @@ def maps(k, fns):
 READ = "read"
 WRITE = "write"
 META = "meta"
+HASH_SCHEMA = "hash_schema"
 
 
 def dcomp(mode, fns, *args, **kwargs):
@@ -118,13 +119,24 @@ def meta(source, schema):
     return dcomp(META, schema, source, {})[0][1]
 
 
+def hash_schema(schema, dest=None):
+    if dest is None:
+        dest = hashlib.md5()
+    return dcomp(HASH_SCHEMA, schema, dest)[0][0].hexdigest()
+
+
+def update_hash(h, k):
+    h.update(":{}:".format(k).encode('utf-8'))
+
+
 NULL = "__NULL__"
 META_ATTRS = (("blank", NULL), ("hidden", NULL), ("help_text", NULL),
               ("max_length", None), ("null", NULL), ("verbose_name", None),
               ("default", NOT_PROVIDED))
+RESERVED_KEYS = set(("model", "ordering", "fields"))
 
 
-class field(object):
+class field():
     """Django model field."""
 
     def __init__(self, k):
@@ -132,7 +144,6 @@ class field(object):
 
     def read(self, source, dest):
         dsets(dest, self.k, dgets(source, self.k))
-
         return (source, dest), {}
 
     def meta(self, source, dest):
@@ -155,11 +166,17 @@ class field(object):
 
         return (source, dest), {}
 
+    def hash_schema(self, dest):
+        update_hash(dest, self.k)
 
-class one(object):
+        return (dest, ), {}
+
+
+class one():
     """Django one-2-one relation."""
 
     def __init__(self, k, fns):
+        assert k not in RESERVED_KEYS, "{} is reserved.".format(k)
         self.k = k
         self.fns = fns
 
@@ -174,11 +191,19 @@ class one(object):
 
         return (source, dest), {}
 
+    def hash_schema(self, dest):
+        update_hash(dest, ":_one_:" + self.k)
+        for fn in self.fns:
+            dest = fn.hash_schema(dest)[0][0]
 
-class many(object):
+        return (dest, ), {}
+
+
+class many():
     """Django one-2-many or many-2-many mapping."""
 
     def __init__(self, k, fns):
+        assert k not in RESERVED_KEYS, "{} is reserved.".format(k)
         self.k = k
         self.fns = fns
 
@@ -199,6 +224,13 @@ class many(object):
             raise Exception("Unknown many field type.")
 
         return (source, dest), {}
+
+    def hash_schema(self, dest):
+        update_hash(dest, ":_one_:" + self.k)
+        for fn in self.fns:
+            dest = fn.hash_schema(dest)[0][0]
+
+        return (dest, ), {}
 
 
 ### Other ###
