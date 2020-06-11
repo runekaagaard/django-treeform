@@ -2,7 +2,10 @@ import pytest
 from testproj.movies.models import Movie, Actor, Director
 
 from django.core.management import call_command
-from treeform import dcomp, field, one, many, read, meta, pp
+from django.db.models.fields import NOT_PROVIDED
+from django.db.models import fields
+
+from treeform import dcomp, field, one, many, read, meta, pp, serialize
 
 
 @pytest.fixture(scope='session')
@@ -46,20 +49,158 @@ def test_read():
 
 @pytest.mark.django_db
 def test_meta():
-    meta_data = meta(Movie, VIEW_MOVIE_SCHEMA)
-    assert meta_data == {
-        'actors': {
-            'fields': ['name', 'education'],
-            'model': Actor
-        },
-        'director': {
-            'fields': ['name', 'age'],
-            'model': Director,
-            'movie_set': {
-                'fields': ['title'],
-                'model': Movie,
+    meta_data = serialize(meta(Movie, VIEW_MOVIE_SCHEMA), indent=4)
+    assert meta_data == """
+{
+    "model": [
+        "__CDT__",
+        "treeform.django_model",
+        "movies.movie"
+    ],
+    "ordering": [
+        "title"
+    ],
+    "fields": {
+        "title": {
+            "type": [
+                "__CDT__",
+                "treeform.django_model_field",
+                "django.db.models.fields.TextField"
+            ],
+            "blank": false,
+            "hidden": false,
+            "help_text": "",
+            "max_length": null,
+            "null": false,
+            "verbose_name": "Movie Title",
+            "default": [
+                "__CDT__",
+                "treeform.not_provided"
+            ]
+        }
+    },
+    "director": {
+        "model": [
+            "__CDT__",
+            "treeform.django_model",
+            "movies.director"
+        ],
+        "ordering": [
+            "name",
+            "age"
+        ],
+        "fields": {
+            "name": {
+                "type": [
+                    "__CDT__",
+                    "treeform.django_model_field",
+                    "django.db.models.fields.TextField"
+                ],
+                "blank": false,
+                "hidden": false,
+                "help_text": "",
+                "max_length": null,
+                "null": false,
+                "verbose_name": "name",
+                "default": [
+                    "__CDT__",
+                    "treeform.not_provided"
+                ]
             },
+            "age": {
+                "type": [
+                    "__CDT__",
+                    "treeform.django_model_field",
+                    "django.db.models.fields.IntegerField"
+                ],
+                "blank": false,
+                "hidden": false,
+                "help_text": "",
+                "max_length": null,
+                "null": false,
+                "verbose_name": "age",
+                "default": [
+                    "__CDT__",
+                    "treeform.not_provided"
+                ]
+            }
         },
-        'fields': ['title'],
-        'model': Movie
+        "movie_set": {
+            "model": [
+                "__CDT__",
+                "treeform.django_model",
+                "movies.movie"
+            ],
+            "ordering": [
+                "title"
+            ],
+            "fields": {
+                "title": {
+                    "type": [
+                        "__CDT__",
+                        "treeform.django_model_field",
+                        "django.db.models.fields.TextField"
+                    ],
+                    "blank": false,
+                    "hidden": false,
+                    "help_text": "",
+                    "max_length": null,
+                    "null": false,
+                    "verbose_name": "Movie Title",
+                    "default": [
+                        "__CDT__",
+                        "treeform.not_provided"
+                    ]
+                }
+            }
+        }
+    },
+    "actors": {
+        "model": [
+            "__CDT__",
+            "treeform.django_model",
+            "movies.actor"
+        ],
+        "ordering": [
+            "name",
+            "education"
+        ],
+        "fields": {
+            "name": {
+                "type": [
+                    "__CDT__",
+                    "treeform.django_model_field",
+                    "django.db.models.fields.TextField"
+                ],
+                "blank": false,
+                "hidden": false,
+                "help_text": "Actor Name",
+                "max_length": null,
+                "null": false,
+                "verbose_name": "name",
+                "default": [
+                    "__CDT__",
+                    "treeform.not_provided"
+                ]
+            },
+            "education": {
+                "type": [
+                    "__CDT__",
+                    "treeform.django_model_field",
+                    "django.db.models.fields.TextField"
+                ],
+                "blank": false,
+                "hidden": false,
+                "help_text": "",
+                "max_length": null,
+                "null": false,
+                "verbose_name": "education",
+                "default": [
+                    "__CDT__",
+                    "treeform.not_provided"
+                ]
+            }
+        }
     }
+}
+""".strip()

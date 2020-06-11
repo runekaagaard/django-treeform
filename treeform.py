@@ -5,6 +5,7 @@ from django.db.models.fields import NOT_PROVIDED
 from django.db.models import Model
 from django.db.models.fields.related_descriptors import (
     ReverseManyToOneDescriptor, ManyToManyDescriptor)
+from django.db.models.fields import Field
 
 
 def comp(fns, *args, **kwargs):
@@ -140,14 +141,17 @@ class field(object):
             dest["ordering"] = []
             dest["fields"] = {}
 
+        if self.k not in dest["fields"]:
+            dest["fields"][self.k] = {}
+
         model_field = source._meta.get_field(self.k)
         dest["ordering"].append(self.k)
-        dest["type"] = type(model_field)
 
+        dest["fields"][self.k]["type"] = type(model_field)
         for key, null in META_ATTRS:
             val = getattr(model_field, key, NULL)
             if val != NULL:
-                dest["fields"][key] = val
+                dest["fields"][self.k][key] = val
 
         return (source, dest), {}
 
@@ -200,24 +204,27 @@ class many(object):
 ### Other ###
 
 CUSTOM_DATA_TYPE = "__CDT__"
-DATA_TYPE_CLASS = "treeform.1"
+CDT_DJANGO_MODEL = "treeform.django_model"
+CDT_DJANGO_MODEL_FIELD = "treeform.django_model_field"
+CDT_NOT_PROVIDED = "treeform.not_provided"
 
 
 def pp(data):
-    from pprint import pprint
-    pprint(data, indent=4, depth=10)
-    # print(serialize(data, indent=4))
+    print(serialize(data, indent=4))
 
 
 def default(thing):
-    print(thing, isinstance(thing, Model), type(thing) is type)
-    if type(thing) is type:
-        return (CUSTOM_DATA_TYPE, DATA_TYPE_CLASS,
-                str(thing.__module__) + "." + thing.__class__.__name_)
-    elif isinstance(thing, Model):
-        return str(thing)
+    if issubclass(thing, Model):
+        return [CUSTOM_DATA_TYPE, CDT_DJANGO_MODEL, str(thing._meta)]
+    if issubclass(thing, Field):
+        return [
+            CUSTOM_DATA_TYPE, CDT_DJANGO_MODEL_FIELD,
+            str(thing.__module__) + "." + thing.__name__
+        ]
+    elif thing is NOT_PROVIDED:
+        return [CUSTOM_DATA_TYPE, CDT_NOT_PROVIDED]
     else:
-        raise TypeError("DONT KNOW" + repr(thing))
+        raise Exception("Dont know {}.".format(thing))
 
 
 def serialize(data, indent=None):
