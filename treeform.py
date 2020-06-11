@@ -78,7 +78,6 @@ def maps(k, fns):
 READ = "read"
 WRITE = "write"
 META = "meta"
-HASH_SCHEMA = "hash_schema"
 
 
 def dcomp(mode, fns, *args, **kwargs):
@@ -119,16 +118,6 @@ def meta(source, schema):
     return dcomp(META, schema, source, {})[0][1]
 
 
-def hash_schema(schema, dest=None):
-    if dest is None:
-        dest = hashlib.md5()
-    return dcomp(HASH_SCHEMA, schema, dest)[0][0].hexdigest()
-
-
-def update_hash(h, k):
-    h.update(":{}:".format(k).encode('utf-8'))
-
-
 NULL = "__NULL__"
 META_ATTRS = (("blank", NULL), ("hidden", NULL), ("help_text", NULL),
               ("max_length", None), ("null", NULL), ("verbose_name", None),
@@ -166,11 +155,6 @@ class field():
 
         return (source, dest), {}
 
-    def hash_schema(self, dest):
-        update_hash(dest, self.k)
-
-        return (dest, ), {}
-
 
 class one():
     """Django one-2-one relation."""
@@ -190,13 +174,6 @@ class one():
               meta(dgets(source, self.k).field.related_model, self.fns))
 
         return (source, dest), {}
-
-    def hash_schema(self, dest):
-        update_hash(dest, ":_one_:" + self.k)
-        for fn in self.fns:
-            dest = fn.hash_schema(dest)[0][0]
-
-        return (dest, ), {}
 
 
 class many():
@@ -224,13 +201,6 @@ class many():
             raise Exception("Unknown many field type.")
 
         return (source, dest), {}
-
-    def hash_schema(self, dest):
-        update_hash(dest, ":_one_:" + self.k)
-        for fn in self.fns:
-            dest = fn.hash_schema(dest)[0][0]
-
-        return (dest, ), {}
 
 
 ### Other ###

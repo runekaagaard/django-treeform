@@ -5,8 +5,7 @@ from django.core.management import call_command
 from django.db.models.fields import NOT_PROVIDED
 from django.db.models import fields
 
-from treeform import (dcomp, field, one, many, read, meta, pp, serialize,
-                      hash_schema)
+from treeform import (dcomp, field, one, many, read, meta, pp, serialize)
 
 
 @pytest.fixture(scope='session')
@@ -205,9 +204,3 @@ def test_meta():
     }
 }
 """.strip()
-
-
-@pytest.mark.django_db
-def test_hash_schema():
-    pp(hash_schema(VIEW_MOVIE_SCHEMA))
-    assert False
