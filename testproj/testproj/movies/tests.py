@@ -5,7 +5,8 @@ from django.core.management import call_command
 from django.db.models.fields import NOT_PROVIDED
 from django.db.models import fields
 
-from treeform import (dcomp, field, one, many, read, meta, pp, serialize)
+from treeform.treeform import (dcomp, field, one, many, read, meta, pp,
+                               serialize)
 
 
 @pytest.fixture(scope='session')
