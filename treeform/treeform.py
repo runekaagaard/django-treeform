@@ -115,14 +115,23 @@ def read(source, schema):
 
 
 def meta(source, schema):
-    return dcomp(META, schema, source, {})[0][1]
+    def hash_schema(source, metadata):
+        """Returns a hash value unique to the given source and schema."""
+        return hashlib.md5(
+            serialize(source).encode("utf-8") +
+            serialize(metadata).encode("utf-8")).hexdigest()
+
+    metadata = dcomp(META, schema, source, {})[0][1]
+    metadata["version_hash"] = hash_schema(source, metadata)
+
+    return metadata
 
 
 NULL = "__NULL__"
 META_ATTRS = (("blank", NULL), ("hidden", NULL), ("help_text", NULL),
               ("max_length", None), ("null", NULL), ("verbose_name", None),
               ("default", NOT_PROVIDED))
-RESERVED_KEYS = set(("model", "ordering", "fields"))
+RESERVED_KEYS = set(("model", "ordering", "fields", "version_hash"))
 
 
 class field():

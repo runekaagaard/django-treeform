@@ -153,8 +153,10 @@ def test_meta():
                         "treeform.not_provided"
                     ]
                 }
-            }
-        }
+            },
+            "version_hash": "e377fa0c879470efb735231ce6806f8b"
+        },
+        "version_hash": "315e9b956204acf65c1fc7d86a58bd9f"
     },
     "actors": {
         "model": [
@@ -201,7 +203,9 @@ def test_meta():
                     "treeform.not_provided"
                 ]
             }
-        }
-    }
+        },
+        "version_hash": "73e8b5532945734f9dd37b4327cb3707"
+    },
+    "version_hash": "1680b821b17a3ea498a057c378f9776f"
 }
 """.strip()
